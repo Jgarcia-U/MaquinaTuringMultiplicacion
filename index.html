@@ -1,254 +1,355 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Máquina de Turing - Multiplicación</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Máquina de Turing - Multiplicación</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
 
-<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6">
+  <body
+    class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6"
+  >
+    <h1 class="text-3xl font-bold mb-4">Máquina de Turing</h1>
+    <p class="text-gray-400 mb-6">Simulación de multiplicación</p>
 
-  <h1 class="text-3xl font-bold mb-4">Máquina de Turing</h1>
-  <p class="text-gray-400 mb-6">Simulación de multiplicación</p>
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="flex gap-6 w-full max-w-6xl">
+      <!-- SIMULADOR -->
+      <div class="bg-gray-800 p-6 rounded-2xl shadow-xl w-1/2">
+        <input
+          id="input"
+          placeholder="Ej: 0001001"
+          class="w-full p-3 rounded-lg text-black mb-4"
+          oninput="sanitizeInput()"
+          onkeydown="return onlyBinary(event);"
+        />
 
-  <!-- SIMULADOR -->
-  <div class="bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-2xl">
+        <div class="flex gap-2 mb-4">
+          <button onclick="start()" class="flex-1 bg-blue-600 p-2 rounded-lg">
+            Iniciar
+          </button>
+          <button onclick="step()" class="flex-1 bg-yellow-600 p-2 rounded-lg">
+            Paso
+          </button>
+          <button onclick="run()" class="flex-1 bg-green-600 p-2 rounded-lg">
+            Auto
+          </button>
+          <button onclick="reset()" class="flex-1 bg-red-600 p-2 rounded-lg">
+            Reset
+          </button>
+        </div>
 
-    <input id="input"
-        placeholder="Ej: 0001001"
-        class="w-full p-3 rounded-lg text-black mb-4"
-        oninput="sanitizeInput()"
-        onkeydown="return onlyBinary(event)"
-    />
+        <div class="mt-4">
+          <h2 class="font-bold">Cinta</h2>
+          <div
+            id="tape"
+            class="bg-black p-3 rounded-lg font-mono overflow-x-auto"
+          ></div>
+        </div>
 
-    <div class="flex gap-2 mb-4">
-      <button onclick="start()" class="flex-1 bg-blue-600 p-2 rounded-lg">Iniciar</button>
-      <button onclick="step()" class="flex-1 bg-yellow-600 p-2 rounded-lg">Paso</button>
-      <button onclick="run()" class="flex-1 bg-green-600 p-2 rounded-lg">Auto</button>
-      <button onclick="reset()" class="flex-1 bg-red-600 p-2 rounded-lg">Reset</button>
-    </div>
+        <div class="mt-4">
+          <h2 class="font-bold">Estado</h2>
+          <div id="state" class="text-xl"></div>
+        </div>
 
-    <div class="mt-4">
-      <h2 class="font-bold">Cinta</h2>
-      <div id="tape" class="bg-black p-3 rounded-lg font-mono overflow-x-auto"></div>
-    </div>
-
-    <div class="mt-4">
-      <h2 class="font-bold">Estado</h2>
-      <div id="state" class="text-xl"></div>
-    </div>
-
-    <div class="mt-4">
-      <h2 class="font-bold">Resultado</h2>
-      <div id="mathResult" class="text-green-400 font-mono"></div>
-      <div id="turingResult" class="text-blue-400 font-mono"></div>
-    </div>
-
-  </div>
-
-  <!-- EXPLICACIÓN -->
-  <div class="mt-10 max-w-5xl">
-
-    <h2 class="text-2xl font-bold mb-6 text-center">¿Cómo interpreta la máquina la multiplicación?</h2>
-
-    <div class="grid md:grid-cols-3 gap-6">
-
-      <div class="bg-gray-800 p-5 rounded-2xl shadow-lg">
-        <h3 class="text-xl font-semibold mb-3 text-blue-400">1. Interpretación del Input</h3>
-        <p class="text-gray-300">
-          La cadena <span class="text-yellow-400 font-mono">0001001</span> representa una multiplicación.
-          <br><br>
-          - Antes del <b>1</b>: 3 ceros → primer número<br>
-          - Después del <b>1</b>: 2 ceros → segundo número
-        </p>
+        <div class="mt-4">
+          <h2 class="font-bold">Resultado</h2>
+          <div id="mathResult" class="text-green-400 font-mono"></div>
+          <div id="turingResult" class="text-blue-400 font-mono"></div>
+        </div>
       </div>
 
-      <div class="bg-gray-800 p-5 rounded-2xl shadow-lg">
-        <h3 class="text-xl font-semibold mb-3 text-green-400">2. Proceso de la Máquina</h3>
-        <p class="text-gray-300">
-          La máquina recorre la cinta:
-          <br><br>
-          ✔ Marca con <b>X</b> y <b>Y</b><br>
-          ✔ Copia bloques de ceros<br>
-          ✔ Repite por cada cero del primer número
-        </p>
-      </div>
+      <!-- HISTORIAL -->
+      <div class="bg-gray-800 p-6 rounded-2xl shadow-xl w-1/2">
+        <h2 class="text-xl font-bold mb-4">Paso a paso</h2>
 
-      <div class="bg-gray-800 p-5 rounded-2xl shadow-lg">
-        <h3 class="text-xl font-semibold mb-3 text-purple-400">3. Resultado Final</h3>
-        <p class="text-gray-300">
-          Resultado esperado:
-          <br><br>
-          <span class="text-yellow-400 font-mono">0001001000000</span>
-          <br><br>
-          Representa:
-          <br>
-          <b>3 × 2 = 6</b>
-        </p>
-      </div>
-
-    </div>
-
-    <div class="mt-10 bg-gray-800 p-6 rounded-2xl shadow-lg">
-      <h3 class="text-xl font-semibold mb-4 text-center">Paso a paso simplificado</h3>
-
-      <div class="space-y-3 text-gray-300 font-mono">
-        <p>1️⃣ 0001001 → separación por '1'</p>
-        <p>2️⃣ X001001 → marcado</p>
-        <p>3️⃣ X00Y001 → copia</p>
-        <p>4️⃣ ... → repetición</p>
-        <p>5️⃣ Resultado final: 0001001000000</p>
+        <div
+          id="history"
+          class="bg-black p-3 rounded-lg h-96 overflow-y-auto font-mono text-sm space-y-2"
+        ></div>
       </div>
     </div>
+    <!-- EXPLICACIÓN -->
+    <div class="mt-12 max-w-6xl w-full">
+      <h2 class="text-2xl font-bold mb-6 text-center">
+        ¿Cómo interpreta la máquina la multiplicación?
+      </h2>
 
-  </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- CARD 1 -->
+        <div class="bg-gray-800 p-5 rounded-2xl shadow-lg">
+          <h3 class="text-xl font-semibold mb-3 text-blue-400">
+            1. Interpretación del Input
+          </h3>
+          <p class="text-gray-300">
+            La cadena <span class="text-yellow-400 font-mono">0001001</span>
+            representa una multiplicación en notación unaria.
+            <br /><br />
+            - Antes del <b>1</b>: número de ceros → primer operando<br />
+            - Después del <b>1</b>: número de ceros → segundo operando
+            <br /><br />
+            Ejemplo:
+            <br />
+            <span class="text-green-400">3 × 2</span>
+          </p>
+        </div>
 
-<script>
-let machine = null;
+        <!-- CARD 2 -->
+        <div class="bg-gray-800 p-5 rounded-2xl shadow-lg">
+          <h3 class="text-xl font-semibold mb-3 text-green-400">
+            2. Proceso de la Máquina
+          </h3>
+          <p class="text-gray-300">
+            La máquina de Turing recorre la cinta aplicando reglas:
+            <br /><br />
+            ✔ Marca símbolos con <b>X</b> y <b>Y</b><br />
+            ✔ Copia bloques de ceros<br />
+            ✔ Se mueve izquierda y derecha<br />
+            ✔ Repite el proceso por cada cero del primer número
+          </p>
+        </div>
 
-const transitions = {
-  A: {
-    '0': { write: 'X', move: 1, next: 'B' },
-    '1': { write: '1', move: 1, next: 'A' }
-  },
-  B: {
-    '0': { write: '0', move: 1, next: 'B' },
-    '1': { write: '1', move: 1, next: 'C' }
-  },
-  C: {
-    '0': { write: 'Y', move: -1, next: 'C' },
-    '_': { write: '_', move: 0, next: 'E' }
-  },
-  D: {
-    '0': { write: '0', move: 1, next: 'D' },
-    '_': { write: '0', move: -1, next: 'E' }
-  },
-  E: {
-    '0': { write: '0', move: -1, next: 'E' },
-    'X': { write: '0', move: 1, next: 'A' }
-  },
-  F: {}
-};
+        <!-- CARD 3 -->
+        <div class="bg-gray-800 p-5 rounded-2xl shadow-lg">
+          <h3 class="text-xl font-semibold mb-3 text-purple-400">
+            3. Resultado Final
+          </h3>
+          <p class="text-gray-300">
+            Al finalizar:
+            <br /><br />
+            La cinta contiene únicamente ceros que representan el resultado.
+            <br /><br />
+            Ejemplo:
+            <br />
+            <span class="text-yellow-400 font-mono">000000</span>
+            <br /><br />
+            Lo que equivale a:
+            <br />
+            <b>6</b>
+          </p>
+        </div>
+      </div>
 
-class TuringMachine {
-  constructor(input) {
-    this.tape = input.split('');
-    this.head = 0;
-    this.state = 'A';
-  }
+      <!-- PASO A PASO -->
+      <div class="mt-10 bg-gray-800 p-6 rounded-2xl shadow-lg">
+        <h3 class="text-xl font-semibold mb-4 text-center">
+          Ejemplo paso a paso (0001001)
+        </h3>
 
-  step() {
-    let symbol = this.tape[this.head] || '_';
-    let rule = transitions[this.state]?.[symbol];
+        <div class="space-y-3 text-gray-300 font-mono">
+          <p>1️⃣ 0001001 → Se identifican los operandos</p>
+          <p>2️⃣ X001001 → Se marca el primer elemento</p>
+          <p>3️⃣ X00Y001 → Se copia el segundo bloque</p>
+          <p>4️⃣ X00Y00Y → Se repite el proceso</p>
+          <p>5️⃣ 000000 → Resultado final</p>
+        </div>
+      </div>
+    </div>
 
-    if (!rule) return false;
+    <script>
+      let machine = null;
+      let history = [];
 
-    this.tape[this.head] = rule.write;
-    this.head += rule.move;
+      const transitions = {
+        A: {
+          0: { write: "X", move: 1, next: "B" },
+          1: { write: "1", move: 1, next: "A" },
+        },
+        B: {
+          0: { write: "0", move: 1, next: "B" },
+          1: { write: "1", move: 1, next: "C" },
+        },
+        C: {
+          0: { write: "Y", move: -1, next: "C" },
+          _: { write: "_", move: 0, next: "E" },
+        },
+        D: {
+          0: { write: "0", move: 1, next: "D" },
+          _: { write: "0", move: -1, next: "E" },
+        },
+        E: {
+          0: { write: "0", move: -1, next: "E" },
+          X: { write: "0", move: 1, next: "A" },
+        },
+        F: {},
+      };
 
-    if (this.head < 0) {
-      this.tape.unshift('_');
-      this.head = 0;
-    }
+      class TuringMachine {
+        constructor(input) {
+          this.tape = input.split("");
+          this.head = 0;
+          this.state = "A";
+        }
 
-    if (this.head >= this.tape.length) {
-      this.tape.push('_');
-    }
+        step() {
+          let symbol = this.tape[this.head] || "_";
+          let rule = transitions[this.state]?.[symbol];
 
-    this.state = rule.next;
-    return true;
-  }
-}
+          if (!rule) return false;
 
-function start() {
-  const input = document.getElementById("input").value.trim();
+          // Guardar historial
+          history.push({
+            state: this.state,
+            head: this.head,
+            tape: [...this.tape],
+            read: symbol,
+            write: rule.write,
+            move: rule.move,
+            next: rule.next,
+          });
 
-  if (!/^0+10+1?$/.test(input)) {
-    alert("Formato inválido. Usa algo como 0001001");
-    return;
-  }
+          this.tape[this.head] = rule.write;
+          this.head += rule.move;
 
-  machine = new TuringMachine(input);
-  render();
-}
+          if (this.head < 0) {
+            this.tape.unshift("_");
+            this.head = 0;
+          }
 
-function step() {
-  if (machine) {
-    machine.step();
-    render();
-  }
-}
+          if (this.head >= this.tape.length) {
+            this.tape.push("_");
+          }
 
-function run() {
-  if (!machine) return;
+          this.state = rule.next;
+          return true;
+        }
+      }
 
-  let interval = setInterval(() => {
-    let running = machine.step();
-    render();
+      function start() {
+        history = [];
+        document.getElementById("history").innerHTML = "";
 
-    if (!running) clearInterval(interval);
-  }, 200);
-}
+        const input = document.getElementById("input").value.trim();
 
-function reset() {
-  machine = null;
-  document.getElementById("tape").innerHTML = "";
-  document.getElementById("state").innerText = "";
-  document.getElementById("mathResult").innerText = "";
-  document.getElementById("turingResult").innerText = "";
-}
+        if (!/^0+10+1?$/.test(input)) {
+          alert("Formato inválido. Usa algo como 0001001");
+          return;
+        }
 
-function render() {
-  let tapeHTML = machine.tape.map((c, i) => {
-    if (i === machine.head) {
-      return `<span class="bg-red-500 px-2">${c}</span>`;
-    }
-    return `<span class="px-2">${c}</span>`;
-  }).join('');
+        machine = new TuringMachine(input);
+        render();
+      }
 
-  document.getElementById("tape").innerHTML = tapeHTML;
-  document.getElementById("state").innerText = machine.state;
+      function step() {
+        if (!machine) return;
 
-  // Resultado matemático
-  document.getElementById("mathResult").innerText =
-    calculateResult(document.getElementById("input").value);
+        let running = machine.step();
+        render();
 
-  // Resultado de la máquina
-  let cleanTape = machine.tape.join('').replace(/_/g, '');
-  document.getElementById("turingResult").innerText =
-    "Salida MT: " + cleanTape;
-}
+        if (!running) {
+          document.getElementById("state").innerText += " (FINALIZADO)";
+        }
+      }
 
-function calculateResult(input) {
-  input = input.trim();
-  let parts = input.split('1').filter(p => p.length > 0);
+      function run() {
+        if (!machine) return;
 
-  if (parts.length !== 2) return "Entrada inválida";
+        let interval = setInterval(() => {
+          let running = machine.step();
+          render();
 
-  let a = parts[0].length;
-  let b = parts[1].length;
+          if (!running) {
+            clearInterval(interval);
+            document.getElementById("state").innerText += " (FINALIZADO)";
+          }
+        }, 200);
+      }
 
-  return `${a} × ${b} = ${a * b}`;
-}
+      function reset() {
+        machine = null;
+        history = [];
 
-function sanitizeInput() {
-  let input = document.getElementById("input");
+        document.getElementById("tape").innerHTML = "";
+        document.getElementById("state").innerText = "";
+        document.getElementById("mathResult").innerText = "";
+        document.getElementById("turingResult").innerText = "";
+        document.getElementById("history").innerHTML = "";
+      }
 
-  input.value = input.value.replace(/[^01]/g, '');
-}
+      function render() {
+        if (!machine) return;
 
-function onlyBinary(e) {
-  const allowedKeys = [
-    "Backspace", "ArrowLeft", "ArrowRight", "Delete", "Tab"
-  ];
+        let tapeHTML = machine.tape
+          .map((c, i) => {
+            if (i === machine.head) {
+              return `<span class="bg-red-500 px-2 rounded">${c}</span>`;
+            }
+            return `<span class="px-2">${c}</span>`;
+          })
+          .join("");
 
-  if (allowedKeys.includes(e.key)) return true;
+        document.getElementById("tape").innerHTML = tapeHTML;
+        document.getElementById("state").innerText = machine.state;
 
-  if (e.key === '0' || e.key === '1') return true;
+        document.getElementById("mathResult").innerText = calculateResult(
+          document.getElementById("input").value,
+        );
 
-  return false;
-}
-</script>
+        let cleanTape = machine.tape.join("").replace(/[^0]/g, "");
+        document.getElementById("turingResult").innerText =
+          "Salida MT: " + cleanTape;
 
-</body>
+        renderHistory();
+      }
+
+      function renderHistory() {
+        let container = document.getElementById("history");
+
+        container.innerHTML = history
+          .map((step, i) => {
+            let tape = step.tape
+              .map((c, idx) => {
+                if (idx === step.head) return `[${c}]`;
+                return c;
+              })
+              .join("");
+
+            return `
+          <div class="border-b border-gray-700 pb-2">
+            <div><b>Paso ${i + 1}</b></div>
+            <div>Estado: ${step.state}</div>
+            <div>Lee: ${step.read} → Escribe: ${step.write}</div>
+            <div>Movimiento: ${step.move === 1 ? "Derecha" : "Izquierda"}</div>
+            <div>Cinta: ${tape}</div>
+          </div>
+        `;
+          })
+          .join("");
+
+        container.scrollTop = container.scrollHeight;
+      }
+
+      function calculateResult(input) {
+        input = input.trim();
+        let parts = input.split("1").filter((p) => p.length > 0);
+
+        if (parts.length !== 2) return "Entrada inválida";
+
+        let a = parts[0].length;
+        let b = parts[1].length;
+
+        return `${a} × ${b} = ${a * b}`;
+      }
+
+      function sanitizeInput() {
+        let input = document.getElementById("input");
+        input.value = input.value.replace(/[^01]/g, "");
+      }
+
+      function onlyBinary(e) {
+        const allowedKeys = [
+          "Backspace",
+          "ArrowLeft",
+          "ArrowRight",
+          "Delete",
+          "Tab",
+        ];
+
+        if (allowedKeys.includes(e.key)) return true;
+        if (e.key === "0" || e.key === "1") return true;
+
+        return false;
+      }
+    </script>
+  </body>
 </html>
